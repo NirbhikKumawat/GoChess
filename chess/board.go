@@ -22,6 +22,12 @@ const (
 	BlackKingside  = 4
 	BlackQueenside = 8
 )
+const (
+	NotAFile  uint64 = 0xfefefefefefefefe
+	NotHFile  uint64 = 0x7f7f7f7f7f7f7f7f
+	NotABFile uint64 = 0xfcfcfcfcfcfcfcfc
+	NotGHFile uint64 = 0x3f3f3f3f3f3f3f3f
+)
 
 var pieceChars = [2][6]rune{
 	{'P', 'N', 'B', 'R', 'Q', 'K'},
@@ -52,6 +58,15 @@ type Board struct {
 	FullMoveNumber  uint16
 }
 
+func init() {
+	for sq := 0; sq < 64; sq++ {
+		KnightAttacks[sq] = maskKnightAttacks(uint8(sq))
+		KingAttacks[sq] = maskKingAttacks(uint8(sq))
+		PawnAttacks[White][sq] = maskPawnAttacks(White, uint8(sq))
+		PawnAttacks[Black][sq] = maskPawnAttacks(Black, uint8(sq))
+	}
+	initSliders()
+}
 func (board *Board) Print() {
 	pieceChars := [2][6]rune{
 		{'P', 'N', 'B', 'R', 'Q', 'K'},
