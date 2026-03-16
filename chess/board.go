@@ -15,13 +15,16 @@ const (
 	Rook
 	Queen
 	King
+	Empty
 )
-const (
-	WhiteKingside  = 1
-	WhiteQueenside = 2
-	BlackKingside  = 4
-	BlackQueenside = 8
+
+var (
+	WhiteKingside  uint8 = 1
+	WhiteQueenside uint8 = 2
+	BlackKingside  uint8 = 4
+	BlackQueenside uint8 = 8
 )
+
 const (
 	NotAFile  uint64 = 0xfefefefefefefefe
 	NotHFile  uint64 = 0x7f7f7f7f7f7f7f7f
@@ -95,3 +98,59 @@ func (board *Board) Print() {
 	}
 	fmt.Println("\n  a b c d e f g h")
 }
+func (board *Board) GeneratePseudoLegalMoves() MoveList {
+	ml := MoveList{}
+	board.generatePawnMoves(&ml)
+	board.generateKnightMoves(&ml)
+	board.generateKingMoves(&ml)
+	board.generateSliderMoves(&ml, Bishop)
+	board.generateSliderMoves(&ml, Rook)
+	board.generateSliderMoves(&ml, Queen)
+
+	return ml
+}
+func (board *Board) IsSquareAttacked(sq uint8, attackerColor uint8) bool {
+	var pawn uint64
+	if attackerColor == White {
+		pawn = PawnAttacks[Black][sq] & board.Colors[attackerColor] & board.Pieces[Pawn]
+	}
+	if attackerColor == Black {
+		pawn = PawnAttacks[White][sq] & board.Colors[attackerColor] & board.Pieces[Pawn]
+	}
+	if pawn != 0 {
+		return true
+	}
+	knight := KnightAttacks[sq] & board.Colors[attackerColor] & board.Pieces[Knight]
+	if knight != 0 {
+		return true
+	}
+	king := KingAttacks[sq] & board.Colors[attackerColor] & board.Pieces[King]
+	if king != 0 {
+		return true
+	}
+	occupied := board.Colors[White] | board.Colors[Black]
+	bishop := GetBishopAttacks(sq, occupied) & (board.Pieces[Bishop] | board.Pieces[Queen]) & board.Colors[attackerColor]
+	if bishop != 0 {
+		return true
+	}
+	rook := GetRookAttacks(sq, occupied) & (board.Pieces[Rook] | board.Pieces[Queen]) & board.Colors[attackerColor]
+	if rook != 0 {
+		return true
+	}
+	return false
+}
+
+// 0000	0	Quiet move (Default)
+// 0001	1	Double pawn push
+// 0010	2	King-side castle
+// 0011	3	Queen-side castle
+// 0100	4	Standard capture
+// 0101	5	En Passant capture
+// 1000	8	Knight promotion
+// 1001	9	Bishop promotion
+// 1010	10	Rook promotion
+// 1011	11	Queen promotion
+// 1100	12	Knight promotion + capture
+// 1101	13	Bishop promotion + capture
+// 1110	14	Rook promotion + capture
+// 1111	15	Queen promotion + capture

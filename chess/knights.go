@@ -40,3 +40,80 @@ func maskKnightAttacks(sq uint8) uint64 {
 	}
 	return attacks
 }
+func (board *Board) generateKnightMoves(ml *MoveList) {
+	color := board.SideToMove
+	enemyColor := color ^ 1
+	enemyPieces := board.Colors[enemyColor]
+	knights := board.Colors[color] & board.Pieces[Knight]
+	for knights != 0 {
+		currSq := PopBit(&knights)
+		attacks := KnightAttacks[currSq] &^ board.Colors[color]
+		captures := attacks & enemyPieces
+		quiets := attacks &^ enemyPieces
+		for captures != 0 {
+			nextSq := PopBit(&captures)
+			ml.Add(NewMove(currSq, nextSq, 4))
+		}
+		for quiets != 0 {
+			nextSq := PopBit(&quiets)
+			ml.Add(NewMove(currSq, nextSq, 0))
+		}
+	}
+}
+func (board *Board) generateSliderMoves(ml *MoveList, piece uint8) {
+	occupied := board.Colors[White] | board.Colors[Black]
+	color := board.SideToMove
+	enemyColor := color ^ 1
+	enemyPieces := board.Colors[enemyColor]
+	if piece == Queen {
+		queens := board.Colors[color] & board.Pieces[Queen]
+		for queens != 0 {
+			currSq := PopBit(&queens)
+			attacks := (GetRookAttacks(currSq, occupied) | GetBishopAttacks(currSq, occupied)) &^ board.Colors[color]
+			captures := attacks & enemyPieces
+			quiets := attacks &^ enemyPieces
+			for captures != 0 {
+				nextSq := PopBit(&captures)
+				ml.Add(NewMove(currSq, nextSq, 4))
+			}
+			for quiets != 0 {
+				nextSq := PopBit(&quiets)
+				ml.Add(NewMove(currSq, nextSq, 0))
+			}
+		}
+	}
+	if piece == Bishop {
+		bishops := board.Colors[color] & board.Pieces[Bishop]
+		for bishops != 0 {
+			currSq := PopBit(&bishops)
+			attacks := GetBishopAttacks(currSq, occupied) &^ board.Colors[color]
+			captures := attacks & enemyPieces
+			quiets := attacks &^ enemyPieces
+			for captures != 0 {
+				nextSq := PopBit(&captures)
+				ml.Add(NewMove(currSq, nextSq, 4))
+			}
+			for quiets != 0 {
+				nextSq := PopBit(&quiets)
+				ml.Add(NewMove(currSq, nextSq, 0))
+			}
+		}
+	}
+	if piece == Rook {
+		rooks := board.Colors[color] & board.Pieces[Rook]
+		for rooks != 0 {
+			currSq := PopBit(&rooks)
+			attacks := GetRookAttacks(currSq, occupied) &^ board.Colors[color]
+			captures := attacks & enemyPieces
+			quiets := attacks &^ enemyPieces
+			for captures != 0 {
+				nextSq := PopBit(&captures)
+				ml.Add(NewMove(currSq, nextSq, 4))
+			}
+			for quiets != 0 {
+				nextSq := PopBit(&quiets)
+				ml.Add(NewMove(currSq, nextSq, 0))
+			}
+		}
+	}
+}
