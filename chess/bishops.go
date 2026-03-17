@@ -88,6 +88,7 @@ func bishopAttacksOnTheFly(sq uint8, block uint64) uint64 {
 }
 
 func GetBishopAttacks(sq uint8, occupancy uint64) uint64 {
+	return bishopAttacksOnTheFly(sq, occupancy)
 	blockers := occupancy & BishopMasks[sq]
 	magicIndex := (blockers * BishopMagics[sq]) >> (64 - bits.OnesCount64(BishopMasks[sq]))
 	return BishopAttacks[sq][magicIndex]

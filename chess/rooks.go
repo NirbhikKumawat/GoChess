@@ -123,6 +123,7 @@ func rookAttacksOnTheFly(sq uint8, block uint64) uint64 {
 }
 
 func GetRookAttacks(sq uint8, occupancy uint64) uint64 {
+	return rookAttacksOnTheFly(sq, occupancy)
 	blockers := occupancy & RookMasks[sq]
 	magicIndex := (blockers * RookMagics[sq]) >> (64 - bits.OnesCount64(RookMasks[sq]))
 	return RookAttacks[sq][magicIndex]

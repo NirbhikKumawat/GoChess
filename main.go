@@ -6,10 +6,11 @@ import (
 )
 
 func main() {
-	fen := "8/8/8/4k3/8/8/4K2p/8 b - - 0 1"
+	fen := "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
 	board, err := chess.ParseFEN(fen)
 	if err != nil {
 		fmt.Println(err)
 	}
 	board.Print()
+	board.PerftDivide(2)
 }

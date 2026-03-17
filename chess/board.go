@@ -273,7 +273,7 @@ func (board *Board) MakeMove(m Move) bool {
 func (board *Board) GetPieceType(sq uint8) uint8 {
 	for i := Pawn; i <= King; i++ {
 		if GetBit(board.Pieces[i], sq) != 0 {
-			return i
+			return uint8(i)
 		}
 	}
 	return Empty

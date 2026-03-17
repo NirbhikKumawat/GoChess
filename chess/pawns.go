@@ -49,10 +49,10 @@ func (board *Board) generatePawnMoves(ml *MoveList) {
 		for attack1 != 0 {
 			nextSq := PopBit(&attack1)
 			if nextSq >= 56 {
-				ml.Add(NewMove(nextSq, nextSq, 8))
-				ml.Add(NewMove(nextSq, nextSq, 9))
-				ml.Add(NewMove(nextSq, nextSq, 10))
-				ml.Add(NewMove(nextSq, nextSq, 11))
+				ml.Add(NewMove(nextSq-8, nextSq, 8))
+				ml.Add(NewMove(nextSq-8, nextSq, 9))
+				ml.Add(NewMove(nextSq-8, nextSq, 10))
+				ml.Add(NewMove(nextSq-8, nextSq, 11))
 			} else {
 				ml.Add(NewMove(nextSq-8, nextSq, 0))
 			}

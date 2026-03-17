@@ -22,7 +22,7 @@ func ParseFEN(fen string) (*Board, error) {
 		board.SideToMove = Black
 	}
 	castlingRights := fenParts[2]
-	cr := 0
+	cr := uint8(0)
 	for _, rights := range castlingRights {
 		if rights == 'Q' {
 			cr |= WhiteQueenside
