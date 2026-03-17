@@ -304,6 +304,7 @@ func (board *Board) getCheckSuffix(m Move) string {
 func (board *Board) ParseSAN(san string) (Move, error) {
 	san = strings.TrimSpace(san)
 	moves := board.GeneratePseudoLegalMoves()
+	cleanInput := strings.TrimRight(san, "+#")
 	for i := 0; i < moves.Count; i++ {
 		testMove := moves.Moves[i]
 
@@ -312,12 +313,11 @@ func (board *Board) ParseSAN(san string) (Move, error) {
 			continue
 		}
 		generatedSAN := board.MoveToSAN(testMove)
+		cleanGenerated := strings.TrimRight(generatedSAN, "+#")
 		if generatedSAN == san {
 			return testMove, nil
 		}
-		cleanInput := strings.TrimRight(san, "+#")
-		cleanGenerated := strings.TrimRight(generatedSAN, "+#")
-		if cleanInput != cleanGenerated {
+		if cleanInput == cleanGenerated {
 			return testMove, nil
 		}
 	}
