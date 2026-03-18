@@ -71,6 +71,7 @@ type Board struct {
 	EnPassantSquare uint8
 	HalfMoveClock   uint8
 	FullMoveNumber  uint16
+	Hash            uint64
 }
 
 func init() {
@@ -158,13 +159,20 @@ func (board *Board) MakeMove(m Move) bool {
 	flags := m.Flags()
 	color := board.SideToMove
 	piece := board.GetPieceType(from)
+	if board.EnPassantSquare != 255 {
+		board.Hash ^= ZobristEnPassant[board.EnPassantSquare%8]
+	}
 	board.EnPassantSquare = 255
 	board.HalfMoveClock++
 	ClearBit(&board.Colors[color], from)
 	ClearBit(&board.Pieces[piece], from)
+	board.Hash ^= ZobristPieces[color][piece][from]
+	board.Hash ^= ZobristPieces[color][piece][to]
 	SetBit(&board.Colors[color], to)
 	epiece := board.GetPieceType(to)
+	board.Hash ^= ZobristCastling[board.CastlingRights]
 	board.CastlingRights &= CastlingMasks[from] & CastlingMasks[to]
+	board.Hash ^= ZobristCastling[board.CastlingRights]
 	if color == Black {
 		board.FullMoveNumber++
 	}
@@ -172,6 +180,7 @@ func (board *Board) MakeMove(m Move) bool {
 		board.HalfMoveClock = 0
 		ClearBit(&board.Colors[1^color], to)
 		ClearBit(&board.Pieces[epiece], to)
+		board.Hash ^= ZobristPieces[1^color][epiece][to]
 	}
 	if piece == Pawn {
 		board.HalfMoveClock = 0
@@ -182,40 +191,63 @@ func (board *Board) MakeMove(m Move) bool {
 			} else {
 				board.EnPassantSquare = to + 8
 			}
+			board.Hash ^= ZobristEnPassant[board.EnPassantSquare%8]
 			SetBit(&board.Pieces[Pawn], to)
 		case 5:
 			SetBit(&board.Pieces[Pawn], to)
 			if color == Black {
 				ClearBit(&board.Colors[1^color], to+8)
 				ClearBit(&board.Pieces[Pawn], to+8)
+				board.Hash ^= ZobristPieces[White][Pawn][to+8]
 			} else {
 				ClearBit(&board.Colors[1^color], to-8)
 				ClearBit(&board.Pieces[Pawn], to-8)
+				board.Hash ^= ZobristPieces[Black][Pawn][to-8]
 			}
 		case 8:
 			SetBit(&board.Pieces[Knight], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Knight][to]
 		case 9:
 			SetBit(&board.Pieces[Bishop], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Bishop][to]
 		case 10:
 			SetBit(&board.Pieces[Rook], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Rook][to]
 		case 11:
 			SetBit(&board.Pieces[Queen], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Queen][to]
 		case 12:
 			SetBit(&board.Pieces[Knight], to)
 			ClearBit(&board.Colors[1^color], to)
 			ClearBit(&board.Pieces[epiece], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Knight][to]
+			board.Hash ^= ZobristPieces[1^color][epiece][to]
 		case 13:
 			SetBit(&board.Pieces[Bishop], to)
 			ClearBit(&board.Colors[1^color], to)
 			ClearBit(&board.Pieces[epiece], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Bishop][to]
+			board.Hash ^= ZobristPieces[1^color][epiece][to]
 		case 14:
 			SetBit(&board.Pieces[Rook], to)
 			ClearBit(&board.Colors[1^color], to)
 			ClearBit(&board.Pieces[epiece], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Rook][to]
+			board.Hash ^= ZobristPieces[1^color][epiece][to]
 		case 15:
 			SetBit(&board.Pieces[Queen], to)
 			ClearBit(&board.Colors[1^color], to)
 			ClearBit(&board.Pieces[epiece], to)
+			board.Hash ^= ZobristPieces[color][piece][to]
+			board.Hash ^= ZobristPieces[color][Queen][to]
+			board.Hash ^= ZobristPieces[1^color][epiece][to]
 		default:
 			SetBit(&board.Pieces[Pawn], to)
 		}
@@ -227,16 +259,20 @@ func (board *Board) MakeMove(m Move) bool {
 				if color == White {
 					ClearBit(&board.Pieces[Rook], 7)
 					ClearBit(&board.Colors[White], 7)
+					board.Hash ^= ZobristPieces[White][Rook][7]
 					SetBit(&board.Pieces[Rook], 5)
 					SetBit(&board.Colors[White], 5)
+					board.Hash ^= ZobristPieces[White][Rook][5]
 					if board.IsSquareAttacked(4, Black) || board.IsSquareAttacked(5, Black) {
 						return false
 					}
 				} else {
 					ClearBit(&board.Pieces[Rook], 63)
 					ClearBit(&board.Colors[Black], 63)
+					board.Hash ^= ZobristPieces[Black][Rook][63]
 					SetBit(&board.Pieces[Rook], 61)
 					SetBit(&board.Colors[Black], 61)
+					board.Hash ^= ZobristPieces[Black][Rook][61]
 					if board.IsSquareAttacked(60, White) || board.IsSquareAttacked(61, White) {
 						return false
 					}
@@ -245,16 +281,20 @@ func (board *Board) MakeMove(m Move) bool {
 				if color == White {
 					ClearBit(&board.Pieces[Rook], 0)
 					ClearBit(&board.Colors[White], 0)
+					board.Hash ^= ZobristPieces[White][Rook][0]
 					SetBit(&board.Pieces[Rook], 3)
 					SetBit(&board.Colors[White], 3)
+					board.Hash ^= ZobristPieces[White][Rook][3]
 					if board.IsSquareAttacked(4, Black) || board.IsSquareAttacked(3, Black) {
 						return false
 					}
 				} else {
 					ClearBit(&board.Pieces[Rook], 56)
 					ClearBit(&board.Colors[Black], 56)
+					board.Hash ^= ZobristPieces[Black][Rook][56]
 					SetBit(&board.Pieces[Rook], 59)
 					SetBit(&board.Colors[Black], 59)
+					board.Hash ^= ZobristPieces[Black][Rook][59]
 					if board.IsSquareAttacked(60, White) || board.IsSquareAttacked(59, White) {
 						return false
 					}
@@ -267,6 +307,7 @@ func (board *Board) MakeMove(m Move) bool {
 		return false
 	}
 	board.SideToMove ^= 1
+	board.Hash ^= ZobristSideToMove
 	return true
 
 }

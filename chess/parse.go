@@ -55,6 +55,7 @@ func ParseFEN(fen string) (*Board, error) {
 		return nil, err
 	}
 	board.FullMoveNumber = uint16(fullMove64)
+	board.Hash = board.GenerateHash()
 	return board, nil
 }
 
