@@ -1,6 +1,8 @@
 package main
 
-import "gochess/chess"
+import (
+	"github.com/NirbhikKumawat/GoChess/chess"
+)
 
 func main() {
 	/*fen := "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
