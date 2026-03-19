@@ -1,1 +1,1 @@
-module gochess
+module github.com/NirbhikKumawat/GoChess.git
