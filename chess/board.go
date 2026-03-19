@@ -319,6 +319,12 @@ func (board *Board) GetPieceType(sq uint8) uint8 {
 	}
 	return Empty
 }
+func (board *Board) GetColorType(sq uint8) uint8 {
+	if GetBit(board.Colors[sq], sq) != 0 {
+		return uint8(Black)
+	}
+	return White
+}
 
 // 0000	0	Quiet move (Default)
 // 0001	1	Double pawn push
