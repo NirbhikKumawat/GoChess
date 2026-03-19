@@ -122,6 +122,18 @@ func (board *Board) GeneratePseudoLegalMoves() MoveList {
 
 	return ml
 }
+func (board *Board) GenerateLegalMoves() MoveList {
+	var legalMoves MoveList
+	pseudoMoves := board.GeneratePseudoLegalMoves()
+	for i := 0; i < pseudoMoves.Count; i++ {
+		m := pseudoMoves.Moves[i]
+		boardCopy := *board
+		if boardCopy.MakeMove(m) {
+			legalMoves.Add(m)
+		}
+	}
+	return legalMoves
+}
 func (board *Board) IsSquareAttacked(sq uint8, attackerColor uint8) bool {
 	var pawn uint64
 	if attackerColor == White {
