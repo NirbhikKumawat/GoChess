@@ -62,6 +62,7 @@ func (board *Board) Minimax(depth int, isMax bool) int {
 }
 func (board *Board) SearchBestMove(depth int) Move {
 	moves := board.GenerateLegalMoves()
+	board.SortMoves(&moves)
 	if moves.Count == 0 {
 		return Move(0)
 	}
