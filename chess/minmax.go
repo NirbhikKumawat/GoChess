@@ -67,15 +67,20 @@ func (board *Board) SearchBestMove(depth int) Move {
 	}
 	bestMove := moves.Moves[0]
 	isMax := board.SideToMove == White
+	alpha := ColorScores[White]
+	beta := ColorScores[Black]
 	if isMax {
 		bestScore := ColorScores[White]
 		for i := 0; i < moves.Count; i++ {
 			boardCopy := *board
 			boardCopy.MakeMove(moves.Moves[i])
-			score := boardCopy.Minimax(depth-1, false)
+			score := boardCopy.AlphaBeta(depth-1, alpha, beta, false)
 			if score > bestScore {
 				bestScore = score
 				bestMove = moves.Moves[i]
+			}
+			if score > alpha {
+				alpha = score
 			}
 		}
 	} else {
@@ -83,10 +88,13 @@ func (board *Board) SearchBestMove(depth int) Move {
 		for i := 0; i < moves.Count; i++ {
 			boardCopy := *board
 			boardCopy.MakeMove(moves.Moves[i])
-			score := boardCopy.Minimax(depth-1, true)
+			score := boardCopy.AlphaBeta(depth-1, alpha, beta, true)
 			if score < bestScore {
 				bestScore = score
 				bestMove = moves.Moves[i]
+			}
+			if score < beta {
+				beta = score
 			}
 		}
 	}
