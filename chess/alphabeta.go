@@ -4,7 +4,7 @@ import "math/bits"
 
 func (board *Board) AlphaBeta(depth, alpha, beta int, isMax bool) int {
 	if depth == 0 {
-		return board.Evaluate()
+		return board.QuiescenceSearch(alpha, beta, isMax)
 	}
 	moves := board.GenerateLegalMoves()
 	color := board.SideToMove
@@ -55,4 +55,60 @@ func (board *Board) AlphaBeta(depth, alpha, beta int, isMax bool) int {
 		}
 		return bestScore
 	}
+}
+func (board *Board) QuiescenceSearch(alpha, beta int, isMax bool) int {
+	standPat := board.Evaluate()
+
+	if isMax {
+		if standPat >= beta {
+			return beta
+		}
+		if standPat > alpha {
+			alpha = standPat
+		}
+	} else {
+		if standPat <= alpha {
+			return alpha
+		}
+		if standPat < beta {
+			beta = standPat
+		}
+	}
+	bestScore := standPat
+	moves := board.GenerateLegalMoves()
+	board.SortMoves(&moves)
+	for i := 0; i < moves.Count; i++ {
+		flags := moves.Moves[i].Flags()
+		isCapture := (flags == 4 || flags == 5) || (flags >= 11)
+		if !isCapture {
+			continue
+		} else {
+			boardCopy := *board
+			boardCopy.MakeMove(moves.Moves[i])
+			if isMax {
+				score := boardCopy.QuiescenceSearch(alpha, beta, false)
+				if score > bestScore {
+					bestScore = score
+				}
+				if score > alpha {
+					alpha = score
+				}
+				if alpha >= beta {
+					break
+				}
+			} else {
+				score := boardCopy.QuiescenceSearch(alpha, beta, true)
+				if score < bestScore {
+					bestScore = score
+				}
+				if score < beta {
+					beta = score
+				}
+				if alpha >= beta {
+					break
+				}
+			}
+		}
+	}
+	return bestScore
 }
