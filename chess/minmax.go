@@ -1,6 +1,9 @@
 package chess
 
-import "math/bits"
+import (
+	"math/bits"
+	"time"
+)
 
 var PieceScores = [6]int{
 	100, 300, 300, 500, 900, 10000,
@@ -71,7 +74,11 @@ func (board *Board) Minimax(depth int, isMax bool) int {
 }
 func (board *Board) SearchBestMove(depth int) Move {
 	moves := board.GenerateLegalMoves()
-	board.SortMoves(&moves, 0)
+	_, _, _, cbestmove, ok := board.ProbeTT()
+	if !ok {
+		cbestmove = Move(0)
+	}
+	board.SortMoves(&moves, cbestmove)
 	if moves.Count == 0 {
 		return Move(0)
 	}
@@ -106,6 +113,25 @@ func (board *Board) SearchBestMove(depth int) Move {
 			if score < beta {
 				beta = score
 			}
+		}
+	}
+	return bestMove
+}
+func (board *Board) SearchWithTime(timeLimitMs int64) Move {
+	startTime := time.Now().UnixMilli()
+	move := board.GenerateLegalMoves()
+	if move.Count == 0 {
+		return Move(0)
+	}
+	bestMove := move.Moves[0]
+	for depth := 1; depth < 100; depth++ {
+		currBestMove := board.SearchBestMove(depth)
+		if currBestMove != Move(0) {
+			bestMove = currBestMove
+		}
+		elapsed := time.Now().UnixMilli() - startTime
+		if elapsed > timeLimitMs {
+			break
 		}
 	}
 	return bestMove
