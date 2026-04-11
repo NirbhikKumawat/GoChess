@@ -2,6 +2,7 @@ package chess
 
 import "fmt"
 
+// Perft (Performance test) is used to evaluate the correctness by checking pseudolegal moves at each depth
 func (board *Board) Perft(depth int) uint64 {
 	if depth == 0 {
 		return 1
@@ -18,6 +19,8 @@ func (board *Board) Perft(depth int) uint64 {
 	}
 	return total
 }
+
+// PerftDivide is used to debug the moves
 func (board *Board) PerftDivide(depth int) {
 	moves := board.GeneratePseudoLegalMoves()
 	var total uint64 = 0

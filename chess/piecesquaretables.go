@@ -1,5 +1,6 @@
 package chess
 
+// PawnPST adds scores in evaluation based on pawn position
 var PawnPST = [64]int{
 	0, 0, 0, 0, 0, 0, 0, 0,
 	50, 50, 50, 50, 50, 50, 50, 50,
@@ -10,6 +11,8 @@ var PawnPST = [64]int{
 	5, 10, 10, -20, -20, 10, 10, 5,
 	0, 0, 0, 0, 0, 0, 0, 0,
 }
+
+// KnightPST adds scores in evaluation based on knight position
 var KnightPST = [64]int{
 	-50, -40, -30, -30, -30, -30, -40, -50,
 	-40, -20, 0, 0, 0, 0, -20, -40,
@@ -20,6 +23,8 @@ var KnightPST = [64]int{
 	-40, -20, 0, 5, 5, 0, -20, -40,
 	-50, -40, -30, -30, -30, -30, -40, -50,
 }
+
+// BishopPST adds scores in evaluation based on bishop position
 var BishopPST = [64]int{
 	-20, -10, -10, -10, -10, -10, -10, -20,
 	-10, 0, 0, 0, 0, 0, 0, -10,
@@ -30,6 +35,7 @@ var BishopPST = [64]int{
 	-10, 5, 0, 0, 0, 0, 5, -10,
 	-20, -10, -10, -10, -10, -10, -10, -20,
 }
+
 var PSTs = [6][64]int{
 	PawnPST, KnightPST, BishopPST, {}, {}, {},
 }

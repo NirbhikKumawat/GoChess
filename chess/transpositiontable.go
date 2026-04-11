@@ -6,6 +6,7 @@ const (
 	TTBeta
 )
 
+// TTEntry is a structure to store already calculated best move
 type TTEntry struct {
 	Hash     uint64
 	Depth    int
@@ -16,8 +17,10 @@ type TTEntry struct {
 
 const TTSize = 1000000
 
+// TranspositionTable stores calculated value for a board state
 var TranspositionTable [TTSize]TTEntry
 
+// ProbeTT returns value from the table
 func (board *Board) ProbeTT() (int, int, int, Move, bool) {
 	currEntry := TranspositionTable[board.Hash%TTSize]
 	if currEntry.Hash == board.Hash {
@@ -25,6 +28,8 @@ func (board *Board) ProbeTT() (int, int, int, Move, bool) {
 	}
 	return 0, 0, 0, 0, false
 }
+
+// StoreTT stores value into the table
 func (board *Board) StoreTT(depth, score, flag int, bestMove Move) {
 	entry := TTEntry{
 		Hash:     board.Hash,

@@ -5,16 +5,26 @@ import (
 	"time"
 )
 
+// PieceScores stores points for each piece
 var PieceScores = [6]int{
 	100, 300, 300, 500, 900, 10000,
 }
+
+// ColorScores stores initial points of each color,White wants to maximize score while black wants to minimize score
 var ColorScores = [2]int{
 	-4000, 4000,
 }
+
+// SearchNodes indicates the number of nodes searched till now
 var SearchNodes uint64
+
+// EndTime tells till when to search
 var EndTime int64
+
+// StopSearch is a flag indicating whether to continue searching
 var StopSearch bool
 
+// CheckTime checks whether it exceeded time after every 2048 node searches
 func CheckTime() {
 	if SearchNodes%2048 == 0 {
 		if time.Now().UnixMilli() >= EndTime {
@@ -23,6 +33,7 @@ func CheckTime() {
 	}
 }
 
+// Evaluate evaluates score at current game state
 func (board *Board) Evaluate() int {
 	score := 0
 	var bb uint64
@@ -42,15 +53,20 @@ func (board *Board) Evaluate() int {
 	}
 	return score
 }
+
+// Minimax returns the best possible score after a certain depth
 func (board *Board) Minimax(depth int, isMax bool) int {
 	if depth == 0 {
 		return board.Evaluate()
 	}
 	moves := board.GenerateLegalMoves()
 	color := board.SideToMove
+
+	// Checkmate/Stalemate
 	if moves.Count == 0 {
 		king := bits.TrailingZeros64(board.Colors[color] & board.Pieces[King])
 		if board.IsSquareAttacked(uint8(king), color^1) {
+			// Losing one wants to delay checkmate
 			if isMax {
 				return ColorScores[White] + depth
 			}
@@ -59,6 +75,8 @@ func (board *Board) Minimax(depth int, isMax bool) int {
 			return 0
 		}
 	}
+
+	// Other side will try to win
 	if isMax {
 		bestScore := ColorScores[White]
 		for i := 0; i < moves.Count; i++ {
@@ -83,6 +101,8 @@ func (board *Board) Minimax(depth int, isMax bool) int {
 		return bestScore
 	}
 }
+
+// SearchBestMove returns the best possible move found
 func (board *Board) SearchBestMove(depth int) Move {
 	moves := board.GenerateLegalMoves()
 	_, _, _, cbestmove, ok := board.ProbeTT()
@@ -134,6 +154,8 @@ func (board *Board) SearchBestMove(depth int) Move {
 	}
 	return bestMove
 }
+
+// SearchWithTime searches for a move with time,instead of depth
 func (board *Board) SearchWithTime(timeLimitMs int64) Move {
 	SearchNodes = 0
 	StopSearch = false

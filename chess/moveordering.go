@@ -1,6 +1,8 @@
 package chess
 
+// ScoreMove calculates score of a move for sorting moves for alpha-beta pruning
 func (board *Board) ScoreMove(m Move, hashMove Move) int {
+	// if move found in
 	if m == hashMove {
 		return 20000000
 	}
@@ -28,6 +30,8 @@ func (board *Board) ScoreMove(m Move, hashMove Move) int {
 
 	return score
 }
+
+// SortMoves sorts the moves in descending order based on scores
 func (board *Board) SortMoves(moves *MoveList, hashMove Move) {
 	scores := make([]int, moves.Count)
 	for i := 0; i < moves.Count; i++ {

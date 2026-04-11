@@ -2,12 +2,15 @@ package chess
 
 import "math/bits"
 
+// AlphaBeta returns the best possible score after certain depth using alpha-beta pruning
 func (board *Board) AlphaBeta(depth, alpha, beta int, isMax bool) int {
 	SearchNodes++
 	CheckTime()
 	if StopSearch {
 		return 0
 	}
+
+	// check for stored value in transposition table
 	cscore, cflag, cdepth, cbestmove, ok := board.ProbeTT()
 	if ok {
 		if cdepth >= depth {
@@ -25,11 +28,14 @@ func (board *Board) AlphaBeta(depth, alpha, beta int, isMax bool) int {
 			}
 		}
 	}
+	// quiescence search
 	if depth == 0 {
 		return board.QuiescenceSearch(alpha, beta, isMax)
 	}
 	moves := board.GenerateLegalMoves()
 	color := board.SideToMove
+
+	// checkmate/stalemate
 	if moves.Count == 0 {
 		king := bits.TrailingZeros64(board.Colors[color] & board.Pieces[King])
 		if board.IsSquareAttacked(uint8(king), color^1) {
@@ -90,18 +96,21 @@ func (board *Board) AlphaBeta(depth, alpha, beta int, isMax bool) int {
 	board.StoreTT(depth, bestScore, flag, bestMove)
 	return bestScore
 }
+
+// QuiescenceSearch  returns score after captures have ended
 func (board *Board) QuiescenceSearch(alpha, beta int, isMax bool) int {
 	SearchNodes++
 	CheckTime()
 	if StopSearch {
 		return 0
 	}
-	standPat := board.Evaluate()
+	standPat := board.Evaluate() // current score
 	color := board.SideToMove
 	kingsq := uint8(bits.TrailingZeros64(board.Colors[color] & board.Pieces[King]))
 	inCheck := board.IsSquareAttacked(uint8(kingsq), color^1)
 	if !inCheck {
 		if isMax {
+			// opponent will not allow this situation
 			if standPat >= beta {
 				return beta
 			}
@@ -109,6 +118,7 @@ func (board *Board) QuiescenceSearch(alpha, beta int, isMax bool) int {
 				alpha = standPat
 			}
 		} else {
+			// opponent will not allow this situation
 			if standPat <= alpha {
 				return alpha
 			}
@@ -131,7 +141,7 @@ func (board *Board) QuiescenceSearch(alpha, beta int, isMax bool) int {
 		flags := moves.Moves[i].Flags()
 		isCapture := (flags == 4 || flags == 5) || (flags >= 11)
 		if !isCapture {
-			continue
+			continue // we need to focus only on captures
 		} else {
 			boardCopy := *board
 			boardCopy.MakeMove(moves.Moves[i])
@@ -143,6 +153,7 @@ func (board *Board) QuiescenceSearch(alpha, beta int, isMax bool) int {
 				if score > alpha {
 					alpha = score
 				}
+				// opponent will never allow
 				if alpha >= beta {
 					break
 				}
@@ -154,6 +165,7 @@ func (board *Board) QuiescenceSearch(alpha, beta int, isMax bool) int {
 				if score < beta {
 					beta = score
 				}
+				// opponent will never allow
 				if alpha >= beta {
 					break
 				}

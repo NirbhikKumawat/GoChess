@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// UCILoop follows standard UCI protocol for chess engines
 func UCILoop() {
 	scanner := bufio.NewScanner(os.Stdin)
 	board, _ := ParseFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -38,6 +39,8 @@ func UCILoop() {
 		}
 	}
 }
+
+// ToLAN converts move to LAN format(required by chess engines)
 func (m Move) ToLAN() string {
 	fromStr, _ := ParseSquareI2S(m.From())
 	toStr, _ := ParseSquareI2S(m.To())
@@ -55,6 +58,8 @@ func (m Move) ToLAN() string {
 	}
 	return lan
 }
+
+// ParseMoveLAN converts a LAN into move
 func (board *Board) ParseMoveLAN(lan string) Move {
 	moves := board.GenerateLegalMoves()
 	var move string
@@ -66,6 +71,8 @@ func (board *Board) ParseMoveLAN(lan string) Move {
 	}
 	return Move(0)
 }
+
+// ParsePosition updates board according to provided FEN
 func ParsePosition(board *Board, tokens []string) {
 	movesIndex := len(tokens)
 	for i, token := range tokens {
@@ -90,6 +97,8 @@ func ParsePosition(board *Board, tokens []string) {
 		}
 	}
 }
+
+// ParseGo analyzes the time remaining and decides how much time to use for making a move
 func ParseGo(board *Board, tokens []string) {
 	side := board.SideToMove
 	var btime, winc, binc, wtime, moveTime int
